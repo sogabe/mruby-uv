@@ -986,10 +986,18 @@ _uv_getaddrinfo_cb(uv_getaddrinfo_t* req, int status, struct addrinfo* res)
   mrb_value args[2];
   mrb_uv_addrinfo* addr = (mrb_uv_addrinfo*) req->data;
   mrb_state* mrb = addr->mrb;
-  char ipaddr[17] = {'\0'};
+  char ipaddr[INET_ADDRSTRLEN] = {'\0'};
+  struct addrinfo *res_p;
 
   mrb_value c = mrb_nil_value();
   if (status != -1) {
+    for (res_p = res; res_p != NULL; res_p = res_p->ai_next) {
+      if (res_p->ai_family == AF_INET) {
+        uv_ip4_name((struct sockaddr_in*) res_p->ai_addr, ipaddr, sizeof(ipaddr));
+        break;
+      }
+    }
+    res = res_p;
     c = mrb_class_new_instance(mrb, 0, NULL, _class_uv_addrinfo);
     OBJECT_SET(mrb, c, "flags", mrb_fixnum_value(res->ai_flags));
     OBJECT_SET(mrb, c, "family", mrb_fixnum_value(res->ai_family));
