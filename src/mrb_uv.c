@@ -75,6 +75,8 @@ static void
 uv_context_free(mrb_state *mrb, void *p)
 {
   mrb_uv_context* context = (mrb_uv_context*) p;
+  /* XXX work around for a flaw in GC */
+  return;
   if (context) {
     OBJECT_REMOVE(mrb, context->instance, "read_cb");
     OBJECT_REMOVE(mrb, context->instance, "write_cb");
